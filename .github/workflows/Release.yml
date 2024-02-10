@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  GH_TOKEN:
+  GH_TOKEN: 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
 
 jobs:
 
