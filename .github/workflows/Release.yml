@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  GH_TOKEN:
 
 jobs:
 
@@ -233,7 +233,7 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
-          curl -JOL https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          curl -JOL https://github.ink/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod a+x appimagetool-x86_64.AppImage
           mkdir -p ${GITHUB_WORKSPACE}/bin
           mv appimagetool-x86_64.AppImage ${GITHUB_WORKSPACE}/bin/appimagetool
@@ -287,7 +287,7 @@ jobs:
         if: steps.check_asset.outputs.skip_build != 'true' && matrix.config.target == 'windows'
         run: |
           hover build windows
-          curl -JOL https://github.com/niuhuan/static-resources/releases/download/windows_build_tools/Resource_Hacker_5.1.8.zip
+          curl -JOL https://github.ink/niuhuan/static-resources/releases/download/windows_build_tools/Resource_Hacker_5.1.8.zip
           Expand-Archive .\Resource_Hacker_5.1.8.zip
           cmd /c "Resource_Hacker_5.1.8\ResourceHacker.exe" -open go\build\outputs\windows-release\pikapika.exe -save go\build\outputs\windows-release\pikapika.exe -action addskip -res go/assets/icon.ico -mask ICONGROUP,MAINICON,0
           cd go\build\outputs\windows-release
@@ -305,7 +305,7 @@ jobs:
       - name: Build (linux)
         if: steps.check_asset.outputs.skip_build != 'true' && matrix.config.target == 'linux'
         run: |
-          curl -JOL https://github.com/junmer/source-han-serif-ttf/raw/master/SubsetTTF/CN/SourceHanSerifCN-Regular.ttf
+          curl -JOL https://github.ink/junmer/source-han-serif-ttf/raw/master/SubsetTTF/CN/SourceHanSerifCN-Regular.ttf
           mkdir -p fonts
           mv SourceHanSerifCN-Regular.ttf fonts/Roboto.ttf
           cat ci/linux_font.yaml >> pubspec.yaml
