@@ -4,7 +4,11 @@ on:
   workflow_dispatch:
 
 env:
-  GH_TOKEN: 
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  go_version: '1.17'
+#  host_linux: ubuntu-latest
+#  host_windows: windows-latest
+#  host_macos: macos-latest
 
 jobs:
 
@@ -56,47 +60,36 @@ jobs:
           - target: windows
             host: windows-latest
             flutter_version: '2.10.3'
-            go_version: '1.17'
           - target: macos
             host: macos-latest
             flutter_version: '2.10.3'
-            go_version: '1.17'
           - target: linux
             host: ubuntu-latest
             flutter_version: '2.10.3'
-            go_version: '1.17'
           - target: ios
             host: macos-latest
             flutter_version: '2.10.5'
-            go_version: '1.18'
           - target: ios
             host: macos-latest
             flutter_version: '3.7.3'
-            go_version: '1.18'
           - target: android-arm32
             host: ubuntu-latest
             flutter_version: '2.10.5'
-            go_version: '1.18'
           - target: android-arm64
             host: ubuntu-latest
             flutter_version: '2.10.5'
-            go_version: '1.18'
           - target: android-x86_64
             host: ubuntu-latest
             flutter_version: '2.10.5'
-            go_version: '1.18'
           - target: android-arm32
             host: ubuntu-latest
             flutter_version: '3.7.3'
-            go_version: '1.18'
           - target: android-arm64
             host: ubuntu-latest
             flutter_version: '3.7.3'
-            go_version: '1.18'
           - target: android-x86_64
             host: ubuntu-latest
             flutter_version: '3.7.3'
-            go_version: '1.18'
 
     runs-on: ${{ matrix.config.host }}
 
@@ -104,7 +97,6 @@ jobs:
       TARGET: ${{ matrix.config.target }}
       FLUTTER_VERSION: ${{ matrix.config.flutter_version }}
       BRANCH: ${{ matrix.sources.branch }}
-      go_version: ${{ matrix.config.go_version }}
 
     steps:
 
@@ -177,7 +169,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: 'niuhuan/pikapika-go-core'
-          token: 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
+          token: ${{ secrets.GH_TOKEN }}
           path: 'go'
 
       - name: Cache Flutter dependencies (Linux/Android)
@@ -233,7 +225,7 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
-          curl -JOL https://github.ink/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          curl -JOL https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod a+x appimagetool-x86_64.AppImage
           mkdir -p ${GITHUB_WORKSPACE}/bin
           mv appimagetool-x86_64.AppImage ${GITHUB_WORKSPACE}/bin/appimagetool
@@ -287,7 +279,7 @@ jobs:
         if: steps.check_asset.outputs.skip_build != 'true' && matrix.config.target == 'windows'
         run: |
           hover build windows
-          curl -JOL https://github.ink/niuhuan/static-resources/releases/download/windows_build_tools/Resource_Hacker_5.1.8.zip
+          curl -JOL https://github.com/niuhuan/static-resources/releases/download/windows_build_tools/Resource_Hacker_5.1.8.zip
           Expand-Archive .\Resource_Hacker_5.1.8.zip
           cmd /c "Resource_Hacker_5.1.8\ResourceHacker.exe" -open go\build\outputs\windows-release\pikapika.exe -save go\build\outputs\windows-release\pikapika.exe -action addskip -res go/assets/icon.ico -mask ICONGROUP,MAINICON,0
           cd go\build\outputs\windows-release
@@ -305,7 +297,7 @@ jobs:
       - name: Build (linux)
         if: steps.check_asset.outputs.skip_build != 'true' && matrix.config.target == 'linux'
         run: |
-          curl -JOL https://github.ink/junmer/source-han-serif-ttf/raw/master/SubsetTTF/CN/SourceHanSerifCN-Regular.ttf
+          curl -JOL https://github.com/junmer/source-han-serif-ttf/raw/master/SubsetTTF/CN/SourceHanSerifCN-Regular.ttf
           mkdir -p fonts
           mv SourceHanSerifCN-Regular.ttf fonts/Roboto.ttf
           cat ci/linux_font.yaml >> pubspec.yaml
@@ -377,9 +369,9 @@ jobs:
             ${{ runner.os }}-go-
       - name: Send to community
         env:
-          TG_BOT_TOKEN: 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
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_IDS: ${{ secrets.TG_CHAT_IDS }}
-          DISCORD_BOT_TOKEN: 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
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHAT_IDS: ${{ secrets.DISCORD_CHAT_IDS }}
         run: |
           cd ci
