@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  GH_TOKEN: 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
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
   go_version: '1.17'
 #  host_linux: ubuntu-latest
 #  host_windows: windows-latest
@@ -18,6 +18,7 @@ jobs:
     needs:
       - check_release
       - build_release_assets
+      - send_to_community
     steps:
       - run: exit 0
 
@@ -168,7 +169,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: 'niuhuan/pikapika-go-core'
-          token: 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
+          token: ${{ secrets.GH_TOKEN }}
           path: 'go'
 
       - name: Cache Flutter dependencies (Linux/Android)
@@ -328,10 +329,52 @@ jobs:
         run: |
           sh scripts/build-apk-x64.sh
 
+      - name: Sign APK (Android)
+        if: steps.check_asset.outputs.skip_build != 'true' && ( matrix.config.target == 'android-arm32' || matrix.config.target == 'android-arm64' || matrix.config.target == 'android-x86_64' )
+        env:
+          KEY_FILE_BASE64: ${{ secrets.KEY_FILE_BASE64 }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          sh scripts/sign-apk-github-actions.sh
+
       - name: Upload Asset (All)
         if: steps.check_asset.outputs.skip_build != 'true'
         run: |
           cd ci
           go run ./cmd/upload_asset
+
+
+  send_to_community:
+    needs:
+      - check_release
+      - build_release_assets
+    name: Send message to community
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: 'master'
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.go_version }}
+      - name: Cache go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Send to community
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_IDS: ${{ secrets.TG_CHAT_IDS }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHAT_IDS: ${{ secrets.DISCORD_CHAT_IDS }}
+        run: |
+          cd ci
+          go run ./cmd/send_to_community
 
 
